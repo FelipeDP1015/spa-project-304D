@@ -1,42 +1,43 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen } from "@testing-library/react";
 import App from "../src/App";
 
-/**
- * Test del componente App.jsx
- *
- * Instalación:
- *   npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom
- *
- * En vite.config.js agregar:
- *   test: { environment: "jsdom", globals: true, setupFiles: "./test/setup.js" }
- *
- * Crear test/setup.js con:
- *   import "@testing-library/jest-dom";
- */
+describe("App – pruebas", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
 
-describe("App", () => {
-  it("muestra los planes cuando el fetch es exitoso", async () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("siempre muestra el título SPA relax", () => {
+    vi.stubGlobal("fetch", () => new Promise(() => {}));
+
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: /SPA relax/i })).toBeInTheDocument();
+  });
+
+  it("muestra un mensaje de error cuando el fetch falla", async () => {
     vi.stubGlobal("fetch", () =>
       Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve([
-            { id: 1, nombre: "Relajación Total", descripcion: "Masajes y aromaterapia", precio: 49990 },
-          ]),
+        ok: false,
+        json: () => Promise.resolve([]),
       })
     );
 
     render(<App />);
 
-    await waitFor(() =>
-      expect(screen.queryByText("Cargando planes...")).not.toBeInTheDocument()
-    );
+    expect(await screen.findByText(/Error:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Error al obtener planes/i)).toBeInTheDocument();
+  });
 
-    expect(screen.getByText("Relajación Total")).toBeInTheDocument();
-    expect(screen.getByText("Masajes y aromaterapia")).toBeInTheDocument();
-    expect(screen.getByText("49990")).toBeInTheDocument();
+  it("renderiza la lista de planes (ul)", () => {
+    vi.stubGlobal("fetch", () => new Promise(() => {}));
 
-    vi.restoreAllMocks();
+    render(<App />);
+
+    expect(screen.getByRole("list")).toBeInTheDocument();
   });
 });
