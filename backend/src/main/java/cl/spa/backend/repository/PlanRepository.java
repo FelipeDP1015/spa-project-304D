@@ -6,8 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  *
- * @author Duoc
+ * @author gubi
  */
-public interface PlanRepository extends JpaRepository<Plan, Long>{
+
+public interface PlanRepository extends JpaRepository<Plan, Long> {
+    
+    
     
 }
